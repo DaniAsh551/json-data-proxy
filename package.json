@@ -1,0 +1,27 @@
+{
+  "name": "json-proxy",
+  "version": "0.0.1",
+  "description": "Provides a proxy object bound to a JSON file.",
+  "main": "dist/index.js",
+  "repository": "https://github.com/DaniAsh551/json-proxy",
+  "author": "dani551",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "tsc",
+    "docs": "npm run build && jsdoc2md -t README.hbs dist/*.js > README.md",
+    "test": "tsc && jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.4",
+    "jest": "^27.0.4",
+    "jsdoc-to-markdown": "^7.0.1",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.4"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.2"
+  }
+}
