@@ -36,11 +36,6 @@ class JsonProxy<T extends object> {
 
   /**
    * @description The proxy object representing the JSON data. Make sure you bring all changes to this object.
-   * Note: This object could be refreshed multiple times, so do not pass this object directly to other functions, but rather encapsulate this in a getter function, or pass the JsonProxy object instead.
-   * Eg: ```js
-   * const jsonProxy = new JsonProxy();
-   * const getProxy = () => jsonProxy.proxy;
-   * ```
    * @type {T}
    */
   proxy:T | undefined;
@@ -81,10 +76,15 @@ class JsonProxy<T extends object> {
       this._refreshProxy();
 
       if(options?.async)
-        setInterval(() => {
-          if (!this.busy && this.changes.length > 0) {
-            this._update();
+      {
+        let that = this;
+        (async function(){
+          if (!that.busy && that.changes.length > 0) {
+            that._update();
           }
+        })();
+      }
+        setInterval(() => {
         }, options?.commitInterval ?? 10 );
     };
 
@@ -128,6 +128,7 @@ class JsonProxy<T extends object> {
 
   /**
    * Reconstructs the proxy to reflect latest changes.
+   * Warning: This will make the previous proxy object obsolete. This could be dangerous if the proxy object has been passed into other places.
    */
   _refreshProxy() {
     this.proxy = new Proxy(this.internalJson, {
@@ -153,7 +154,6 @@ class JsonProxy<T extends object> {
     if (this.busy || this.changes.length < 1) return;
 
     this.busy = true;
-    //this.watcher.
     let changes = [...this.changes];
     this.changes = [];
     let json = this.internalJson;
@@ -164,14 +164,10 @@ class JsonProxy<T extends object> {
     if(this.options?.async){
       let jp = this;
       fs.writeFile(this.jsonFilePath, jsonString).then(() => {
-        jp.internalJson = json;
-        jp._refreshProxy();
         jp.busy = false;
       });
     }else{
       fsS.writeFileSync(this.jsonFilePath, jsonString);
-      this.internalJson = json;
-      this._refreshProxy();
       this.busy = false;
     }
   }
@@ -181,19 +177,33 @@ class JsonProxy<T extends object> {
    * @param jsonProxy 
    */
   _onContentChange(jsonProxy:any) {
-    if (jsonProxy.busy) return;
     let content = fsS.readFileSync(jsonProxy.jsonFilePath, {
       encoding: "utf-8",
     });
     let update = () => {
       if (!jsonProxy.busy) {
         jsonProxy.busy = true;
-        jsonProxy.internalJson = JSON.parse(content);
-        jsonProxy._refreshProxy();
+        let newJson = JSON.parse(content);
+        let newKeys = Object.keys(newJson);
+        let oldKeys = Object.keys(jsonProxy.internalJson).filter(k => !newKeys.includes(k));
+
+        oldKeys.forEach(k => jsonProxy.internalJson[k] = undefined);
+        newKeys.forEach(k => jsonProxy.internalJson[k] = newJson[k]);
+
         jsonProxy.busy = false;
       } else setTimeout(() => update(), this.options?.commitInterval ?? 10);
     };
-    update();
+
+    if(!this.busy)
+      update();
+      else{
+        let schedule = () => {
+          if(!this.busy)
+            update();
+            else
+            setTimeout(schedule, this.options.commitInterval || 10);
+        };
+      }
   }
 
   /**
