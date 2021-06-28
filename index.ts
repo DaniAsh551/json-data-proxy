@@ -15,42 +15,41 @@ import IJsonProxyOptions from "./json-proxy-options";
  * ```
  */
 class JsonProxy<T extends object> {
-
   /**
    * @type {IJsonProxyOptions}
    */
-  options:IJsonProxyOptions;
+  options: IJsonProxyOptions;
   /**
    * @type {string}
    */
-  jsonFilePath:string;
+  jsonFilePath: string;
   /**
    * @type {Array<VoidFunction>|Array<null>}
    */
-  changeListeners:Array<((p:any)=>void)|null> = [];
+  changeListeners: Array<((p: any) => void) | null> = [];
 
   /**
    * @type {T}
    */
-  internalJson:T;
+  internalJson: T;
 
   /**
    * @description The proxy object representing the JSON data. Make sure you bring all changes to this object.
    * @type {T}
    */
-  proxy:T | undefined;
+  proxy: T | undefined;
 
   /**
    * @type {Array<VoidFunction>}
    */
-  changes:Array<(p:any) => void> = [];
+  changes: Array<(p: any) => void> = [];
 
   busy = false;
 
   /**
    * @type {chokidar.FSWatcher?}
    */
-  watcher:chokidar.FSWatcher|null;
+  watcher: chokidar.FSWatcher | null;
 
   /**
    * Creates a new instance of JsonProxy
@@ -58,7 +57,11 @@ class JsonProxy<T extends object> {
    * @param {any} defaultData The initial data to use if the file is being created for the first time.
    * @param {number} commitInterval The interval to check for changes and committing them to the json file on disk in milliseconds. Defaults to 50.
    */
-  constructor(jsonFilePath:string, defaultData:any = {}, options:IJsonProxyOptions = { async:false, commitInterval:10 }) {
+  constructor(
+    jsonFilePath: string,
+    defaultData: any = {},
+    options: IJsonProxyOptions = { async: false, commitInterval: 10 }
+  ) {
     this.jsonFilePath = path.join(process.cwd(), jsonFilePath);
     this.internalJson = defaultData;
     this.options = options;
@@ -75,24 +78,27 @@ class JsonProxy<T extends object> {
 
       this._refreshProxy();
 
-      if(options?.async)
-      {
+      if (options?.async) {
         let that = this;
-        (async function(){
+        (async function () {
           if (!that.busy && that.changes.length > 0) {
             that._update();
           }
         })();
       }
-        setInterval(() => {
-        }, options?.commitInterval ?? 10 );
+      setInterval(() => {}, options?.commitInterval ?? 10);
     };
 
     this.watcher = null;
 
     //create file if not exists
-    if (!fsS.existsSync(this.jsonFilePath) || fsS.readFileSync(this.jsonFilePath, { encoding:"utf8" }) == "") {
-      fsS.writeFileSync(this.jsonFilePath, JSON.stringify(defaultData), { encoding:"utf8" });
+    if (
+      !fsS.existsSync(this.jsonFilePath) ||
+      fsS.readFileSync(this.jsonFilePath, { encoding: "utf8" }) == ""
+    ) {
+      fsS.writeFileSync(this.jsonFilePath, JSON.stringify(defaultData), {
+        encoding: "utf8",
+      });
       _continue();
       //fs.writeFile(this.jsonFilePath, JSON.stringify(defaultData), { encoding: "utf8" }).then(() => _continue());
     } else {
@@ -105,7 +111,7 @@ class JsonProxy<T extends object> {
    * @param {Array<VoidFunction>} listener
    * @returns {number} Unique id for the listener.
    */
-  addListener(listener:(p:any) => void) {
+  addListener(listener: (p: any) => void) {
     this.changeListeners.push(listener);
     return this.changeListeners.length - 1;
   }
@@ -114,7 +120,7 @@ class JsonProxy<T extends object> {
    * Removes a listener from the queue.
    * @param {number} id Unique id for the listener.
    */
-  removeListener(id:number) {
+  removeListener(id: number) {
     if (
       typeof id !== "number" ||
       isNaN(id) ||
@@ -133,23 +139,24 @@ class JsonProxy<T extends object> {
   _refreshProxy() {
     this.proxy = new Proxy(this.internalJson, {
       set: (obj, prop, value) => {
-        let change = (json:any) => {
+        let change = (json: any) => {
           json[prop] = value;
         };
         this.changes.push(change);
 
         //if not running in async mode, update synchronously now
-        if(!this.options?.async){
+        if (!this.options?.async) {
           this._update();
         }
         return true;
       },
       get: (obj, prop) => (obj as any)[prop],
     });
-    this.changeListeners
-      .forEach((listener) => listener ? listener(this.proxy) : {});
   }
 
+  /**
+   * @description Updates the file to reflect the latest JSON state.
+   */
   _update() {
     if (this.busy || this.changes.length < 1) return;
 
@@ -161,22 +168,28 @@ class JsonProxy<T extends object> {
 
     let jsonString = JSON.stringify(json);
 
-    if(this.options?.async){
+    if (this.options?.async) {
       let jp = this;
       fs.writeFile(this.jsonFilePath, jsonString).then(() => {
         jp.busy = false;
       });
-    }else{
+      this.changeListeners.forEach((listener) =>
+        listener ? listener(this.proxy) : {}
+      );
+    } else {
       fsS.writeFileSync(this.jsonFilePath, jsonString);
       this.busy = false;
+      this.changeListeners.forEach((listener) =>
+        listener ? listener(this.proxy) : {}
+      );
     }
   }
 
   /**
    * Fired when an FS change is detected.
-   * @param jsonProxy 
+   * @param jsonProxy
    */
-  _onContentChange(jsonProxy:any) {
+  _onContentChange(jsonProxy: any) {
     let content = fsS.readFileSync(jsonProxy.jsonFilePath, {
       encoding: "utf-8",
     });
@@ -185,25 +198,27 @@ class JsonProxy<T extends object> {
         jsonProxy.busy = true;
         let newJson = JSON.parse(content);
         let newKeys = Object.keys(newJson);
-        let oldKeys = Object.keys(jsonProxy.internalJson).filter(k => !newKeys.includes(k));
+        let oldKeys = Object.keys(jsonProxy.internalJson).filter(
+          (k) => !newKeys.includes(k)
+        );
 
-        oldKeys.forEach(k => jsonProxy.internalJson[k] = undefined);
-        newKeys.forEach(k => jsonProxy.internalJson[k] = newJson[k]);
+        oldKeys.forEach((k) => (jsonProxy.internalJson[k] = undefined));
+        newKeys.forEach((k) => (jsonProxy.internalJson[k] = newJson[k]));
 
         jsonProxy.busy = false;
+        this.changeListeners.forEach((listener) =>
+          listener ? listener(this.proxy) : {}
+        );
       } else setTimeout(() => update(), this.options?.commitInterval ?? 10);
     };
 
-    if(!this.busy)
-      update();
-      else{
-        let schedule = () => {
-          if(!this.busy)
-            update();
-            else
-            setTimeout(schedule, this.options.commitInterval || 10);
-        };
-      }
+    if (!this.busy) update();
+    else {
+      let schedule = () => {
+        if (!this.busy) update();
+        else setTimeout(schedule, this.options.commitInterval || 10);
+      };
+    }
   }
 
   /**
