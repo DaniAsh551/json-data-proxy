@@ -35,6 +35,12 @@ class JsonProxy<T extends object> {
   internalJson:T;
 
   /**
+   * @description The proxy object representing the JSON data. Make sure you bring all changes to this object.
+   * Note: This object could be refreshed multiple times, so do not pass this object directly to other functions, but rather encapsulate this in a getter function, or pass the JsonProxy object instead.
+   * Eg: ```js
+   * const jsonProxy = new JsonProxy();
+   * const getProxy = () => jsonProxy.proxy;
+   * ```
    * @type {T}
    */
   proxy:T | undefined;
