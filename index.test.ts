@@ -103,6 +103,36 @@ describe("test if file is created", function () {
 
         expect(diskJSON).toBe(expectedJSON);
     }, 3000);
+
+    it("at creation, proxies with pre-existing JSON files should reflect FS value", async function(){
+        const commitInterval = 10;
+        const testPath = getTestFilePath();
+        let expectedData = {
+            foo: {
+                bar: "FooBar",
+            },
+            arr: ["123", "321"]
+        };
+        
+        let expectedJSON = JSON.stringify(expectedData);
+
+        //write file before JsonProxy creation
+        await promisify(fs.writeFile)(testPath, expectedJSON);
+
+        var jp = new JsonProxy<any>({ jsonFilePath:testPath, defaultData:{}, async: false, commitInterval });
+
+        if(!jp.proxy){
+            jp.destroy();
+            fs.rmSync(testPath);
+            throw "proxy is inaccesible";
+        }
+        
+        await sleep(commitInterval*100);
+
+        let diskJSON = await promisify(fs.readFile)(testPath, { encoding:"utf8" });
+
+        expect(diskJSON).toBe(expectedJSON);
+    }, 3000);
 });
 
 //prepare
