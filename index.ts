@@ -61,7 +61,7 @@ class JsonProxy<T extends object> {
     options: IJsonProxyOptions = { jsonFilePath:"", defaultData: null, async: false, commitInterval: 10 }
   ) {
 
-    if([options.jsonFilePath,options.defaultData].map(x => !x).length > 0 || options.jsonFilePath == "")
+    if([options.jsonFilePath,options.defaultData].filter(x => !x).length > 0 || options.jsonFilePath == "")
       throw "Both 'jsonFilePath' and 'defaultData' are required.";
 
     this.jsonFilePath = path.join(process.cwd(), options.jsonFilePath);
