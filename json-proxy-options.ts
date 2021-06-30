@@ -15,6 +15,16 @@ interface IJsonProxyOptions {
      * @type {number}
      */
     commitInterval?:number,
+    /**
+     * @description File path of the JSON file to be used as data backend on the FileSystem.
+     * @type {string}
+     */
+    jsonFilePath: string,
+    /**
+     * @description The default value for the data. If a new file creation is required, it would be with this data.
+     * @type {any}
+     */
+    defaultData: any
 }
 
 export default IJsonProxyOptions;

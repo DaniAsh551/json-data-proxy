@@ -1,6 +1,6 @@
 {
   "name": "json-proxy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Provides a proxy object bound to a JSON file.",
   "main": "dist/index.js",
   "repository": "https://github.com/DaniAsh551/json-proxy",

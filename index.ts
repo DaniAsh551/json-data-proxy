@@ -58,12 +58,14 @@ class JsonProxy<T extends object> {
    * @param {number} commitInterval The interval to check for changes and committing them to the json file on disk in milliseconds. Defaults to 50.
    */
   constructor(
-    jsonFilePath: string,
-    defaultData: any = {},
-    options: IJsonProxyOptions = { async: false, commitInterval: 10 }
+    options: IJsonProxyOptions = { jsonFilePath:"", defaultData: null, async: false, commitInterval: 10 }
   ) {
-    this.jsonFilePath = path.join(process.cwd(), jsonFilePath);
-    this.internalJson = defaultData;
+
+    if([options.jsonFilePath,options.defaultData].map(x => !x).length > 0 || options.jsonFilePath == "")
+      throw "Both 'jsonFilePath' and 'defaultData' are required.";
+
+    this.jsonFilePath = path.join(process.cwd(), options.jsonFilePath);
+    this.internalJson = options.defaultData;
     this.options = options;
 
     let _continue = () => {
@@ -96,7 +98,7 @@ class JsonProxy<T extends object> {
       !fsS.existsSync(this.jsonFilePath) ||
       fsS.readFileSync(this.jsonFilePath, { encoding: "utf8" }) == ""
     ) {
-      fsS.writeFileSync(this.jsonFilePath, JSON.stringify(defaultData), {
+      fsS.writeFileSync(this.jsonFilePath, JSON.stringify(options.defaultData), {
         encoding: "utf8",
       });
       _continue();
