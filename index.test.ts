@@ -21,7 +21,7 @@ describe("test if file is created", function () {
     it("should create file named '[0-9].testdata.json'", function () {
         const testPath = getTestFilePath();
         console.log('TEST_PATH', testPath);
-        var jp = new JsonProxy<Array<number>>(testPath, []);
+        var jp = new JsonProxy<Array<number>>({ jsonFilePath:testPath, defaultData:[] });
         expect(fs.existsSync(testPath));
         let content = fs.readFileSync(testPath, { encoding:"utf8" });
         expect(content).toBe("[]");
@@ -31,7 +31,7 @@ describe("test if file is created", function () {
     it("should be interactible", function () {
         const testPath = getTestFilePath();
         console.log('TEST_PATH', testPath);
-        var jp = new JsonProxy<Array<number>>(testPath, []);
+        var jp = new JsonProxy<Array<number>>({jsonFilePath:testPath, defaultData:[]});
         var number = 123;
         if(!jp.proxy){
             jp.destroy();
@@ -46,7 +46,7 @@ describe("test if file is created", function () {
         const commitInterval = 10;
         const testPath = getTestFilePath();
         console.log('TEST_PATH', testPath);
-        var jp = new JsonProxy<Array<number>>(testPath, [], { async:false, commitInterval });
+        var jp = new JsonProxy<Array<number>>({ jsonFilePath:testPath, defaultData:[], async:false, commitInterval });
         jp.addListener(() => console.log("CHANGED"));
         var number = 123;
         if(!jp.proxy){
@@ -84,7 +84,7 @@ describe("test if file is created", function () {
         
         let expectedJSON = JSON.stringify(finalValue);
 
-        var jp = new JsonProxy<{ foo:{ bar:string }, arr:Array<string> }>(testPath, defaultValue, { async: false, commitInterval });
+        var jp = new JsonProxy<{ foo:{ bar:string }, arr:Array<string> }>({ jsonFilePath:testPath, defaultData:defaultValue, async: false, commitInterval });
 
 
         if(!jp.proxy){
