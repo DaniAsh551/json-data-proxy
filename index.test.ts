@@ -1,7 +1,5 @@
 import JsonProxy from "./index";
 import fs from "fs";
-import { emit } from "process";
-import { threadId } from "worker_threads";
 import {promisify} from "util";
 
 const writeFileAsync = promisify(fs.writeFile);
