@@ -26,8 +26,8 @@ describe("test if file is created", function () {
         let content = fs.readFileSync(testPath, { encoding:"utf8" });
         expect(content).toBe("[]");
         jp.destroy();
-        fs.rmSync(testPath);
     });
+
     it("should be interactible", function () {
         const testPath = getTestFilePath();
         console.log('TEST_PATH', testPath);
@@ -35,13 +35,11 @@ describe("test if file is created", function () {
         var number = 123;
         if(!jp.proxy){
             jp.destroy();
-            fs.rmSync(testPath);
             throw "proxy is inaccesible";
         }
         jp.proxy.push(number);
         expect(jp.proxy[0]).toBe(number);
         jp.destroy();
-        fs.rmSync(testPath);
     });
 
     it("should reflect FS changes", async function () {
@@ -53,7 +51,6 @@ describe("test if file is created", function () {
         var number = 123;
         if(!jp.proxy){
             jp.destroy();
-            fs.rmSync(testPath);
             throw "proxy is inaccesible";
         }
 
@@ -62,13 +59,49 @@ describe("test if file is created", function () {
             await sleep(commitInterval * 100);
             if(!jp.proxy){
                 jp.destroy();
-                fs.rmSync(testPath);
                 throw "proxy is inaccesible";
             }
             expect(jp.proxy[0]).toBe(number);
             jp.destroy();
-            fs.rmSync(testPath);
         });
+    }, 3000);
+
+    it("non-array objects and nexted-objects should work as expected", async function(){
+        const commitInterval = 10;
+        const testPath = getTestFilePath();
+        let defaultValue = {
+            foo: {
+                bar: "foo_bar",
+            },
+            arr: []
+        };
+        let finalValue = {
+            foo: {
+                bar: "FooBar",
+            },
+            arr: ["123", "321"]
+        };
+        
+        let expectedJSON = JSON.stringify(finalValue);
+
+        var jp = new JsonProxy<{ foo:{ bar:string }, arr:Array<string> }>(testPath, defaultValue, { async: false, commitInterval });
+
+
+        if(!jp.proxy){
+            jp.destroy();
+            fs.rmSync(testPath);
+            throw "proxy is inaccesible";
+        }
+
+        jp.proxy.arr.push("123");
+        jp.proxy.arr.push("321");
+        jp.proxy.foo.bar = "FooBar";
+        
+        await sleep(commitInterval*100);
+
+        let diskJSON = await promisify(fs.readFile)(testPath, { encoding:"utf8" });
+
+        expect(diskJSON).toBe(expectedJSON);
     }, 3000);
 });
 
