@@ -137,21 +137,29 @@ class JsonProxy<T extends object> {
    * Warning: This will make the previous proxy object obsolete. This could be dangerous if the proxy object has been passed into other places.
    */
   _refreshProxy() {
-    this.proxy = new Proxy(this.internalJson, {
-      set: (obj, prop, value) => {
+    let _this = this;
+    let handler = {
+      get: function(target:any, key:string):any {
+        if (typeof target[key] === 'object' && target[key] !== null) {
+          return new Proxy(target[key], handler)
+        } else {
+          return target[key];
+        }
+      },
+      set (target:any, key:string, value:any):boolean {
         let change = (json: any) => {
-          json[prop] = value;
+          target[key] = value;
         };
-        this.changes.push(change);
+        _this.changes.push(change);
 
         //if not running in async mode, update synchronously now
-        if (!this.options?.async) {
-          this._update();
+        if (!_this.options?.async) {
+          _this._update();
         }
         return true;
-      },
-      get: (obj, prop) => (obj as any)[prop],
-    });
+      }
+    };
+    this.proxy = new Proxy(this.internalJson, handler);
   }
 
   /**
