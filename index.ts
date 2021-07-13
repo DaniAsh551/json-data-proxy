@@ -1,5 +1,5 @@
 /**
- * @module json-proxy
+ * @module json-data-proxy
  */
 import fs from "fs/promises";
 import fsS from "fs";

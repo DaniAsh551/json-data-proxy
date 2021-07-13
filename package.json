@@ -1,12 +1,14 @@
 {
-  "name": "json-proxy",
+  "name": "json-data-proxy",
   "version": "0.2.1",
   "description": "Provides a proxy object bound to a JSON file.",
   "main": "dist/index.js",
-  "repository": "https://github.com/DaniAsh551/json-proxy",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/DaniAsh551/json-data-proxy",
   "author": "dani551",
   "license": "MIT",
   "private": false,
+  "prepublish": "tsc",
   "scripts": {
     "build": "tsc",
     "docs": "npm run build && jsdoc2md -t README.hbs dist/*.js > README.md",
