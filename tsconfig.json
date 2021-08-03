@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
-      "target": "es5",
-      "module": "commonjs",
-      "lib": ["es2017", "es7", "es6"],
+      "target": "ES3",
+      "module": "CommonJS",
+      "lib": [],
       "declaration": true,
       "outDir": "dist",
       "strict": true,
       "esModuleInterop": true,
       "sourceMap": true,
+      "moduleResolution": "node",
       "typeRoots": [
         "node_modules/@types"
       ]

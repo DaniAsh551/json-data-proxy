@@ -9,6 +9,7 @@
   "license": "MIT",
   "private": false,
   "prepublish": "tsc",
+  "type": "commonjs",
   "scripts": {
     "build": "tsc",
     "docs": "npm run build && jsdoc2md -t README.hbs dist/*.js > README.md",
