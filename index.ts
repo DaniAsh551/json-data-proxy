@@ -11,7 +11,7 @@ import IJsonProxyOptions from "./json-proxy-options";
  * @description Provides an interface to manage JSON data parity between FS and in-code.
  * @example
  * ```js
- * const JsonProxy = require('json-proxy');
+ * const {default: JsonProxy} = require('json-proxy');
  * ```
  */
 class JsonProxy<T extends object> {
@@ -64,7 +64,7 @@ class JsonProxy<T extends object> {
     if([options.jsonFilePath,options.defaultData].filter(x => !x).length > 0 || options.jsonFilePath == "")
       throw "Both 'jsonFilePath' and 'defaultData' are required.";
 
-    this.jsonFilePath = path.join(process.cwd(), options.jsonFilePath);
+    this.jsonFilePath = options.jsonFilePath;
     this.internalJson = options.defaultData;
     this.options = options;
 

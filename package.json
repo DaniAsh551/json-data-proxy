@@ -1,6 +1,6 @@
 {
   "name": "json-data-proxy",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Provides a proxy object bound to a JSON file.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
